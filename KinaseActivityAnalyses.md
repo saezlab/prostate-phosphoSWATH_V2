@@ -130,7 +130,7 @@ Venn_plot <- draw.triple.venn(length(PhosphositesKEA2),
 grid.draw(Venn_plot)
 ```
 
-![](KinaseEnrichmentAnalyses_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+![](KinaseActivityAnalyses_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
 ## Kinase Activity Estimation
 
@@ -244,7 +244,7 @@ viper_hmap <- pheatmap(t(Kin_activity),fontsize=14,
                        treeheight_col = 0,  border_color = NA) 
 ```
 
-![](KinaseEnrichmentAnalyses_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+![](KinaseActivityAnalyses_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
 ## References
 
