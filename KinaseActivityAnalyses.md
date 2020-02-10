@@ -277,14 +277,14 @@ in **Omnipath**.
 
 ``` r
 Omnipath_df_reduced <- Omnipath_df %>%
-  dplyr::select(enzyme_genesymbol,GeneResidue) %>%
+  dplyr::mutate(sign = ifelse(modification == "phosphorylation",1,-1)) %>%    
+  dplyr::select(enzyme_genesymbol,GeneResidue, sign) %>%
   dplyr::rename(kinases = "enzyme_genesymbol", substrates = "GeneResidue")
 
 KSN_Omnipath <- Omnipath_df_reduced %>%
-  dplyr::distinct() %>%
-  dplyr::mutate(sign = 1)
+  dplyr::distinct() 
 nrow(KSN_Omnipath)
-## [1] 32877
+## [1] 33615
 ```
 
 We generate the regulons and run viper to estimate kinase activity using
@@ -369,6 +369,7 @@ KSN_PDTs_regulon <- df_to_viper_regulon(KSN_PDTs[,c(2,1,3)])
 
 Kin_activity_PDTs <- viper(MatrixStatistic, regulon = KSN_PDTs_regulon, 
    minsize = 5, adaptive.size = TRUE, eset.filter = TRUE, verbose = FALSE)
+saveRDS(Kin_activity_PDTs, file = "Results/Kin_activity_PDTs.rds")
 ```
 
 We finally display the activity of the kinases for the different
@@ -396,7 +397,7 @@ KSN_merged_Allsources <- dplyr::bind_rows(KSN_Omnipath, KSN_KEA2, KSN_PDTs) %>%
   dplyr::distinct() %>%
   dplyr::mutate(sign = 1)
 nrow(KSN_merged_Allsources)
-## [1] 59978
+## [1] 60716
 ```
 
 We generate the regulons and run viper to estimate kinase activity using
@@ -465,7 +466,7 @@ EnrichmentResults
 
 Then, we carefully reviewed the literature:
 
-\*\* Regarding LIMK1 & LIMK2\*\*
+**Regarding LIMK1 & LIMK2**
 
 LIMK1 and LIMK2 are serine/threonine kinases with a major function in
 the regulation of actin filament dynamics. LIMK1 is activated by
@@ -549,7 +550,7 @@ the Cbl recruitment to the activated EGFR. *Thus, Abl and the EGFR may
 function synergistically in the pathogenesis of human tumors.*
 (Extracted from Tanos et al 2006).
 
-\*\* Regarding MINK1 \*\*
+**Regarding MINK1**
 
 Daulat et al. show that the adaptor PRICKLE1 interacts with RICTOR and
 positively controls mTORC2 signaling and cancer cell migration. The
@@ -558,7 +559,7 @@ serine/threonine kinase. They also show that upregulation of PRICKLE1 is
 associated with AKT signaling and poor prognosis in basal breast cancers
 (Extracted from Daulat et al. 2016)
 
-\*\* Regarding TNK2 \*\*
+**Regarding TNK2**
 
 Interestingly, TNK2 – a downstream effector of Cdc42 – can also be
 activated in response to EGF and interacts with EGFR via a previously

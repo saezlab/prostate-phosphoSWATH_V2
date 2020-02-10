@@ -275,12 +275,12 @@ We generate the KSN only taking into account the information available in
 
 ```{r}
 Omnipath_df_reduced <- Omnipath_df %>%
-  dplyr::select(enzyme_genesymbol,GeneResidue) %>%
+  dplyr::mutate(sign = ifelse(modification == "phosphorylation",1,-1)) %>%    
+  dplyr::select(enzyme_genesymbol,GeneResidue, sign) %>%
   dplyr::rename(kinases = "enzyme_genesymbol", substrates = "GeneResidue")
 
 KSN_Omnipath <- Omnipath_df_reduced %>%
-  dplyr::distinct() %>%
-  dplyr::mutate(sign = 1)
+  dplyr::distinct() 
 nrow(KSN_Omnipath)
 ```
 We generate the regulons and run viper to estimate kinase activity using 
@@ -376,6 +376,7 @@ KSN_PDTs_regulon <- df_to_viper_regulon(KSN_PDTs[,c(2,1,3)])
 
 Kin_activity_PDTs <- viper(MatrixStatistic, regulon = KSN_PDTs_regulon, 
    minsize = 5, adaptive.size = TRUE, eset.filter = TRUE, verbose = FALSE)
+saveRDS(Kin_activity_PDTs, file = "Results/Kin_activity_PDTs.rds")
 ```
 
 We finally display the activity of the kinases for the different conditions
