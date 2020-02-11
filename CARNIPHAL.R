@@ -14,7 +14,7 @@ setwd("/home/alvaldeolivas/Documents/GitHub/Saezlab/prostate-phosphoSWATH_V2/")
 #### Generate the Network
 
 OmnipathInteractions <- import_Omnipath_Interactions() %>%
-    dplyr::filter(consensus_stimulation != 0 | consensus_stimulation != 0)  %>%  
+    dplyr::filter(consensus_stimulation != 0 | consensus_inhibition != 0)  %>%  
     dplyr::mutate(sign = if_else(consensus_stimulation==1,1,-1)) %>%
     dplyr::select(source_genesymbol, sign,  target_genesymbol) %>%
     dplyr::rename(source ="source_genesymbol", target ="target_genesymbol") 
@@ -38,6 +38,10 @@ CarnivalNetwork$target <- gsub("[/]","_",CarnivalNetwork$target)
 CarnivalNetwork$target <- gsub("[space]","_",CarnivalNetwork$target)
 CarnivalNetwork$source <- gsub("[-]", "_", CarnivalNetwork$source)
 CarnivalNetwork$target <- gsub("[-]", "_", CarnivalNetwork$target)
+CarnivalNetwork$source <- gsub(pattern = "/", replacement = "_", x = CarnivalNetwork$source, fixed = TRUE)
+CarnivalNetwork$source <- gsub(pattern = " ", replacement = "_", x = CarnivalNetwork$source, fixed = TRUE)
+CarnivalNetwork$target <- gsub(pattern = "/", replacement = "_", x = CarnivalNetwork$target, fixed = TRUE)
+CarnivalNetwork$target <- gsub(pattern = " ", replacement = "_", x = CarnivalNetwork$target, fixed = TRUE)
 
 ### We are going to keep only the largest connected component of our network
 
@@ -65,11 +69,12 @@ LinearModelData_df <- ResultsLinearModel %>%
 
 LinearModelData_LNCaP_noInhib_t2_EGF <- LinearModelData_df %>%
     dplyr::filter(term == "LNCaP_noInhib_t2_EGF") %>%
-    dplyr::filter(p.value < 0.1)  %>%
-    dplyr::select(GeneSymbol_Residue, statistic)  %>% 
+    dplyr::filter(p.value < 0.05)  %>%
+    dplyr::select(GeneSymbol_Residue, statistic, p.value)  %>% 
     dplyr::group_by(GeneSymbol_Residue) %>%
-    dplyr::filter(statistic == max(abs(statistic)))  %>%
+    dplyr::filter(p.value == min(p.value))  %>%
     dplyr::ungroup() %>%
+    dplyr::select(-p.value)  %>%
     dplyr::filter(GeneSymbol_Residue %in% CarnivalNetwork_gcc$target) %>%
     tibble::column_to_rownames(var = "GeneSymbol_Residue") %>%
     as.data.frame() 
@@ -86,7 +91,7 @@ Kin_activity_LNCaP_noInhib_t2_EGF <- Kin_activity_PDTs  %>%
 
 ## We have to scale the NES between 1 and 0. 
 Kin_activity_LNCaP_noInhib_t2_EGF$LNCaP_noInhib_t2_EGF <- 
-    range(Kin_activity_LNCaP_noInhib_t2_EGF$LNCaP_noInhib_t2_EGF)
+    as.data.frame(range(Kin_activity_LNCaP_noInhib_t2_EGF$LNCaP_noInhib_t2_EGF))
 
 # rownames(Kin_activity_LNCaP_noInhib_t2_EGF) <- 
 #     gsub("[-+{},;() ]","___",rownames(Kin_activity_LNCaP_noInhib_t2_EGF))
@@ -97,14 +102,15 @@ inputObj <- data.frame(EGF = 1)
 ##  We run CARNIVAL for our particular condition
 # counter_CL <- detectCores() - 2
 
+
 CarnivalResults <-runCARNIVAL(
     solverPath="/opt/ibm/ILOG/CPLEX_Studio129/cplex/bin/x86-64_linux/cplex",
-    netObj=CarnivalNetwork,
-    measObj=t(LinearModelData_LNCaP_noInhib_t2_EGF),
-    # inputObj = inputObj,
+    netObj=CarnivalNetwork_gcc,
+    measObj=as.data.frame(t(LinearModelData_LNCaP_noInhib_t2_EGF)),
+    inputObj = inputObj,
     DOTfig=TRUE, 
     dir_name="Results",
-    # weightObj=t(Kin_activity_LNCaP_noInhib_t2_EGF),
+    weightObj=as.data.frame(t(Kin_activity_LNCaP_noInhib_t2_EGF)),
     # nodeID = 'gene',
     timelimit = 7200,
     solver = "cplex")
