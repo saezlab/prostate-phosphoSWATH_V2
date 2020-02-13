@@ -42,16 +42,16 @@ sig_pathways_df$sign <- unlist(lapply(row.names(sig_pathways_df), function(x, ki
 sig_pathways_df <- sig_pathways_df[!is.nan(sig_pathways_df$sign),]
 
 PathwaysSelect <- sig_pathways_df[,c(1,2,7)]
-PathwaysSign <- PathwaysSelect[PathwaysSelect$`Adjusted p-value` <= 0.00001,]
+PathwaysSign <- PathwaysSelect[PathwaysSelect$`Adjusted p-value` <= 0.0001,]
 PathwaysSign$pathway <- row.names(PathwaysSign) 
 PathwaysSign <- PathwaysSign[,c(4,1,2,3)]
 colnames(PathwaysSign) <- c("pathway","pvalue","AdjPvalu","sign")
 PathwaysSign$pathway <- as.factor(PathwaysSign$pathway )
 
 
-Interesting_pathways <- c("KEGG_REGULATION_OF_ACTIN_CYTOSKELETON",
+Interesting_pathways <- c("KEGG_PROGESTERONE_MEDIATED_OOCYTE_MATURATION",
                           "KEGG_PROSTATE_CANCER",
-                          "PID_AR_NONGENOMIC_PATHWAY")
+                          "REACTOME_EXTRA_NUCLEAR_ESTROGEN_SIGNALING")
 
 p <- ggplot(PathwaysSign, aes(x = reorder(pathway, pvalue), 
                               y = -log10(pvalue) , fill=sign)) + 

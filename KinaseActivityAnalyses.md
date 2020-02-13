@@ -254,17 +254,18 @@ ann_colors = list(
 )
 
 covariate_vars <- c("Intercept","ms_day180409", "ms_day180410", "ms_day180412", 
-                    "ms_day180414", "Culture_batch", "fraction_missing")
+                    "ms_day180414", "Culture_batch", "fraction_missing", "LNCaP")
 
 ## From linear model to Matrix suitable to run Viper.
 MatrixStatistic <-     
     LinearModelData_df %>% 
-    dplyr::select(statistic,GeneSymbol_Residue, term) %>%
+    dplyr::select(statistic,GeneSymbol_Residue, term, p.value) %>%
     dplyr::filter(!(term %in% covariate_vars)) %>%
     dplyr::group_by(GeneSymbol_Residue, term) %>%
-    dplyr::filter(statistic == max(abs(statistic))) %>%
+    dplyr::filter(p.value == min(p.value)) %>%
     dplyr::ungroup() %>%
-    dplyr::distinct()  %>%
+    dplyr::distinct() %>% 
+    dplyr::select(-p.value)  %>%
     tidyr::pivot_wider(names_from = term, values_from = statistic)  %>%
     tibble::column_to_rownames(var = "GeneSymbol_Residue") %>% 
     as.matrix()

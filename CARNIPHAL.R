@@ -4,7 +4,6 @@ library(CARNIVAL)
 library(OmnipathR)
 library(dplyr)
 library(readr)
-library(caret)
 library(bc3net)
 
 range <- function(x){ (x - min(x))/(max(x)-min(x)) * (1 - (-1)) + -1 }

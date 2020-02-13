@@ -41,14 +41,10 @@ We first load the required libraries. In addition, we define a function
 to scale the values of the KAE between -1 and +1 .
 
 ``` r
-library(readr)
-library(dplyr)
+library(CARNIVAL)
 library(OmnipathR)
-library(VennDiagram)
-library(viper)
-library(tidyr)
-library(pheatmap)
-library(gprofiler2)
+library(dplyr)
+library(readr)
 library(bc3net)
 
 range <- function(x){ (x - min(x))/(max(x)-min(x)) * (1 - (-1)) + -1 }
@@ -94,7 +90,8 @@ CarnivalNetwork$source <- gsub("[-]", "_", CarnivalNetwork$source)
 CarnivalNetwork$target <- gsub("[-]", "_", CarnivalNetwork$target)
 CarnivalNetwork$source <- gsub(pattern = "/", replacement = "_", 
     x = CarnivalNetwork$source, fixed = TRUE)
-CarnivalNetwork$source <- gsub(pattern = " ", replacement = "_", x = CarnivalNetwork$source, fixed = TRUE)
+CarnivalNetwork$source <- gsub(pattern = " ", replacement = "_", 
+    x = CarnivalNetwork$source, fixed = TRUE)
 CarnivalNetwork$target <- gsub(pattern = "/", replacement = "_", 
     x = CarnivalNetwork$target, fixed = TRUE)
 CarnivalNetwork$target <- gsub(pattern = " ", replacement = "_", 
@@ -110,7 +107,8 @@ CarnivalNetwork_igraph <-
     igraph::as_data_frame()  
 
 CarnivalNetwork_gcc <- dplyr::semi_join(CarnivalNetwork,CarnivalNetwork_igraph,
-    by = c("source" = "from", "target" = "to"))
+    by = c("source" = "from", "target" = "to")) %>% 
+    dplyr::distinct()
 ```
 
 ### Reading and Formatting linear model results
@@ -118,7 +116,7 @@ CarnivalNetwork_gcc <- dplyr::semi_join(CarnivalNetwork,CarnivalNetwork_igraph,
 We read the linear model and we take the t-values of the significant
 phosphosites for our condition of interest. In this case, we are going
 to focus on the LNCaP cell line with no inhibition and after stimulation
-by EGF ligand in the second time point (t2). It was described as an
+by EGF ligand in the first time point (t1). It was described as an
 interesting situation based on the KAE results presented in the previous
 vignette.
 
@@ -135,13 +133,14 @@ LinearModelData_df <- ResultsLinearModel %>%
     tidyr::unnest(residues_str) %>% 
     dplyr::mutate(GeneSymbol_Residue = paste(GeneSymbol, residues_str, sep="_")) 
 
-LinearModelData_LNCaP_noInhib_t2_EGF <- LinearModelData_df %>%
-    dplyr::filter(term == "LNCaP_noInhib_t2_EGF") %>%
+LinearModelData_LNCaP_noInhib_t1_EGF <- LinearModelData_df %>%
+    dplyr::filter(term == "LNCaP_noInhib_t1_EGF") %>%
     dplyr::filter(p.value < 0.05)  %>%
     dplyr::select(GeneSymbol_Residue, statistic, p.value)  %>% 
     dplyr::group_by(GeneSymbol_Residue) %>%
     dplyr::filter(p.value == min(p.value))  %>%
     dplyr::ungroup() %>%
+    dplyr::distinct() %>%
     dplyr::select(-p.value)  %>%
     dplyr::filter(GeneSymbol_Residue %in% CarnivalNetwork_gcc$target) %>%
     tibble::column_to_rownames(var = "GeneSymbol_Residue") %>%
@@ -161,12 +160,12 @@ publication.
 ``` r
 Kin_activity_PDTs <- as.data.frame(readRDS("Results/Kin_activity_PDTs.rds")) 
 
-Kin_activity_LNCaP_noInhib_t2_EGF <- Kin_activity_PDTs  %>%
-    dplyr::select(LNCaP_noInhib_t2_EGF) 
+Kin_activity_LNCaP_noInhib_t1_EGF <- Kin_activity_PDTs  %>%
+    dplyr::select(LNCaP_noInhib_t1_EGF) 
 
 ## We have to scale the NES between 1 and 0. 
-Kin_activity_LNCaP_noInhib_t2_EGF$LNCaP_noInhib_t2_EGF <- 
-    as.data.frame(range(Kin_activity_LNCaP_noInhib_t2_EGF$LNCaP_noInhib_t2_EGF))
+Kin_activity_LNCaP_noInhib_t1_EGF$LNCaP_noInhib_t1_EGF <- 
+    as.data.frame(range(Kin_activity_LNCaP_noInhib_t1_EGF$LNCaP_noInhib_t1_EGF))
 ```
 
 ### Perturbation: Activiatory or inhibitory conditions
@@ -188,14 +187,32 @@ aforementioned inputs:
 CarnivalResults <-runCARNIVAL(
     solverPath="/opt/ibm/ILOG/CPLEX_Studio129/cplex/bin/x86-64_linux/cplex",
     netObj=CarnivalNetwork_gcc,
-    measObj=as.data.frame(t(LinearModelData_LNCaP_noInhib_t2_EGF)),
+    measObj=as.data.frame(t(LinearModelData_LNCaP_noInhib_t1_EGF)),
     inputObj = inputObj,
     DOTfig=TRUE, 
     dir_name="Results",
-    weightObj=as.data.frame(t(Kin_activity_LNCaP_noInhib_t2_EGF)),
+    weightObj=as.data.frame(t(Kin_activity_LNCaP_noInhib_t1_EGF)),
     # nodeID = 'gene',
-    timelimit = 7200,
+    timelimit = 14400,
     solver = "cplex")
+```
+
+    ## [1] "There are duplicated interactions in the network. Removing the \n            duplications.."
+
+    ## Warning in if (weightObj != "NULL") {: the condition has length > 1 and only the
+    ## first element will be used
+
+    ## [1] "Writing constraints..."
+    ## [1] "Solving LP problem..."
+    ## [1] "Writing result files..."
+
+    ## Warning in dir.create(dir_name): 'Results' already exists
+
+    ## [1] " "
+    ## [1] "--- End of the CARNIVAL pipeline ---"
+    ## [1] " "
+
+``` r
             # progenyMembers = progenyMembers_mice,
             # parallelIdx1 = counter_CL)
 saveRDS(CarnivalResults, file = "Results/CarnivalResults.rds")
