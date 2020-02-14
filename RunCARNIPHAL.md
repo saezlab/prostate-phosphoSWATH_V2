@@ -195,30 +195,36 @@ CarnivalResults <-runCARNIVAL(
     # nodeID = 'gene',
     timelimit = 14400,
     solver = "cplex")
-```
-
-    ## [1] "There are duplicated interactions in the network. Removing the \n            duplications.."
-
-    ## Warning in if (weightObj != "NULL") {: the condition has length > 1 and only the
-    ## first element will be used
-
-    ## [1] "Writing constraints..."
-    ## [1] "Solving LP problem..."
-    ## [1] "Writing result files..."
-
-    ## Warning in dir.create(dir_name): 'Results' already exists
-
-    ## [1] " "
-    ## [1] "--- End of the CARNIVAL pipeline ---"
-    ## [1] " "
-
-``` r
-            # progenyMembers = progenyMembers_mice,
-            # parallelIdx1 = counter_CL)
 saveRDS(CarnivalResults, file = "Results/CarnivalResults.rds")
 ```
 
 ## Interpreting the results
+
+The results can be found in the following reference in our github
+repository:
+<https://github.com/saezlab/prostate-phosphoSWATH_V2/blob/master/Results/ActivityNetwork_model_Nr0_Uniprot.eps>
+<https://github.com/saezlab/prostate-phosphoSWATH_V2/blob/master/Results/ActivityNetwork_model_Nr0_Uniprot.dot>
+
+I maybe should change the results since they are a bit misleading
+compare to the Kinase activity results. For the CARNIVAL output, blue
+means active wheres it is the other way around for the Kinase activity
+heatmaps.
+
+In the Carniphal output, it seems interesting the role played by PRKCA.
+The application of EGF seems to activate PRKCA which, in turn activates
+some of the proteins in the MAPK pathway. To provide some example, one
+of the cascades ends up in LIMK1 which phosphorylates many sites and it
+is implicated in actin filament dynamics and stabilizing the actin
+cytoskeleton. In this way, LIMK1 regulates several actin-dependent
+biological processes including cell motility, cell cycle progression,
+and differentiation. LIMK1 is overexpressed in highly aggressive and
+metastatic prostate cancers (Davila et al 2007). LNCaP cells are not
+highly metastatic/aggresive and the perturbation with EGF ligand can
+lead to the increase in their metastic activity throught these
+signalling cascades.
+
+In addition, PRKCA inhibits MET which in turns leads to the low activity
+of some of the kinases reported in the KAE (KIT, MAPK14, MAP4K5).
 
 ## References
 
@@ -235,3 +241,8 @@ Liu A, Trairatphisan P, Gjerga E, Didangelos A, Barratt J,
 Saez-Rodriguez J. (2019). From expression footprints to causal pathways:
 contextualizing large signaling networks with CARNIVAL. npj Systems
 Biology and Applications, <https://doi.org/10.1038/s41540-019-0118-z>.
+
+Davila, M., Jhala, D., Ghosh, D. et al. Expression of LIM kinase 1 is
+associated with reversible G1/S phase arrest, chromosomal instability
+and prostate cancer. Mol Cancer 6, 40 (2007).
+<https://doi.org/10.1186/1476-4598-6-40>

@@ -186,7 +186,7 @@ inputObj <- data.frame(EGF = 1)
 We finally run CARNIPHAL for our particular condition of interest and we 
 aforementioned inputs:
 
-```{r, eval = TRUE, message=FALSE}
+```{r, eval = FALSE, message=FALSE}
 CarnivalResults <-runCARNIVAL(
     solverPath="/opt/ibm/ILOG/CPLEX_Studio129/cplex/bin/x86-64_linux/cplex",
     netObj=CarnivalNetwork_gcc,
@@ -198,13 +198,35 @@ CarnivalResults <-runCARNIVAL(
     # nodeID = 'gene',
     timelimit = 14400,
     solver = "cplex")
-            # progenyMembers = progenyMembers_mice,
-            # parallelIdx1 = counter_CL)
 saveRDS(CarnivalResults, file = "Results/CarnivalResults.rds")
 ```
 
 ## Interpreting the results
 
+The results can be found in the following reference in our github repository:
+
+<https://github.com/saezlab/prostate-phosphoSWATH_V2/blob/master/Results/ActivityNetwork_model_Nr0_Uniprot.eps>
+
+<https://github.com/saezlab/prostate-phosphoSWATH_V2/blob/master/Results/ActivityNetwork_model_Nr0_Uniprot.dot>
+
+I maybe should change the results since they are a bit misleading compare to the
+Kinase activity results. For the CARNIVAL output, blue means active wheres it is
+the other way around for the Kinase activity heatmaps. 
+
+In the Carniphal output, it seems interesting the role played by PRKCA. The 
+application of EGF seems to activate PRKCA which, in turn activates some 
+of the proteins in the MAPK pathway. To provide some example, one of the 
+cascades ends up in LIMK1 which phosphorylates many sites and it is implicated
+in actin filament dynamics and stabilizing the actin cytoskeleton. In this way, 
+LIMK1 regulates several actin-dependent biological processes including cell 
+motility, cell cycle progression, and differentiation. LIMK1 is overexpressed 
+in highly aggressive and metastatic prostate cancers (Davila et al 2007). 
+LNCaP cells are not highly metastatic/aggresive and the perturbation with EGF
+ligand can lead to the increase in their metastic activity throught these 
+signalling cascades.
+
+In addition, PRKCA inhibits MET which in turns leads to the low activity of 
+some of the kinases reported in the KAE (KIT, MAPK14, MAP4K5).
 
 
 ## References
@@ -214,3 +236,5 @@ D Turei, T Korcsmaros and J Saez-Rodriguez (2016) OmniPath: guidelines and gatew
 Hijazi, M., Smith, R., Rajeeve, V. et al. Reconstructing kinase network topologies from phosphoproteomics data reveals cancer-associated rewiring. Nat Biotechnol (2020). https://doi.org/10.1038/s41587-019-0391-9
 
 Liu A, Trairatphisan P, Gjerga E, Didangelos A, Barratt J, Saez-Rodriguez J. (2019). From expression footprints to causal pathways: contextualizing large signaling networks with CARNIVAL. npj Systems Biology and Applications, https://doi.org/10.1038/s41540-019-0118-z.
+
+Davila, M., Jhala, D., Ghosh, D. et al. Expression of LIM kinase 1 is associated with reversible G1/S phase arrest, chromosomal instability and prostate cancer. Mol Cancer 6, 40 (2007). https://doi.org/10.1186/1476-4598-6-40
