@@ -202,7 +202,9 @@ saveRDS(CarnivalResults, file = "Results/CarnivalResults.rds")
 
 The results can be found in the following reference in our github
 repository:
+
 <https://github.com/saezlab/prostate-phosphoSWATH_V2/blob/master/Results/ActivityNetwork_model_Nr0_Uniprot.eps>
+
 <https://github.com/saezlab/prostate-phosphoSWATH_V2/blob/master/Results/ActivityNetwork_model_Nr0_Uniprot.dot>
 
 I maybe should change the results since they are a bit misleading
