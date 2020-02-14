@@ -430,39 +430,42 @@ pheatmap(Kin_activity_Allsources, cluster_rows=TRUE, cluster_cols=TRUE,
 A pfd version of the heatmap figures can be found at
 <https://github.com/saezlab/prostate-phosphoSWATH_V2/tree/master/FiguresKAE>.
 Looking at these heatmaps, we decided to focus on the KAE results using
-the PDTs data to build the KSN. The two different cell lines cluster in
-a “quite” well separation, excepting for the PI3K inhibition and the EGF
-ligand. We focus here in the analysis of some cluster of kinases that
-are active/ under certain conditions:
+the PDTs data to build the KSN. The LNCaP cell line tries to cluster
+togheter, but the abl lines inhibited with iPI3K separate them. We focus
+here in the analysis of some cluster of kinases that are
+active/unnactuve under certain conditions:
 
-### ABL1, ABL2, LIMK1, LIMK2 and MINK1 (TNK2?)
+### ABL1, ABL2, LIMK1, LIMK2
 
-I focus in this because they do not have a clear activity profile, but
-they are very active in this condition.
-
-These kinases are specifically very active in the non-inhibited LNCaP
-cell line during the second time point after treatment with EGF.
+These kinases are quite active in the non-inhibited LNCaP cell line
+during the first time point after treatment with EGF. I focused on this
+condition because I know better the LNCaP cell lines and the potential
+effect of the EGF than other conditions under study. I therefore try to
+provide some biological insights.
 
 We first performed an enrichment analyses. We use Kinases from PDTs
 network as a background (very stringent test).
 
 ``` r
-## To fair a very restringent enrichment, we just consider kinases in the KSN 
-GeneSet <-  c("MINK1","ABL1","ABL2","LIMK1","LIMK2")
-KinaseBackground <- unique(KSN_PDTs$kinases)
-EnrichmentResults <- gost(GeneSet, significant = TRUE, user_threshold = 0.05, 
-    organism = 'hsapiens',custom_bg=KinaseBackground,
+## We consier as background the kinases available in Omnipath
+GeneSet <-  c("ABL1","ABL2","LIMK1","LIMK2")
+KinaseBackground <- unique(Omnipath_df$enzyme_genesymbol)
+EnrichmentResults <- gost(GeneSet, significant = TRUE, user_threshold = 0.025, 
+    organism = 'hsapiens', custom_bg=KinaseBackground,
     correction_method = c("fdr"))[[1]] %>%
-    dplyr::filter(intersection_size >= 2) %>%
+    dplyr::filter(intersection_size >= 3) %>%
     dplyr::select(term_id, source, term_name, p_value) %>%
     dplyr::arrange(p_value)
 EnrichmentResults
-##      term_id source                       term_name    p_value
-## 1 GO:0030029  GO:BP    actin filament-based process 0.04052825
-## 2 GO:0030036  GO:BP actin cytoskeleton organization 0.04052825
-## 3 GO:0003779  GO:MF                   actin binding 0.04605427
-## 4 GO:0003785  GO:MF           actin monomer binding 0.04605427
-## 5 GO:0051015  GO:MF          actin filament binding 0.04605427
+##              term_id source                       term_name      p_value
+## 1  REAC:R-HSA-422475   REAC                   Axon guidance 0.0007417867
+## 2 REAC:R-HSA-1266738   REAC           Developmental Biology 0.0014336829
+## 3  REAC:R-HSA-195258   REAC            RHO GTPase Effectors 0.0028577307
+## 4  REAC:R-HSA-194315   REAC        Signaling by Rho GTPases 0.0035991352
+## 5         KEGG:04360   KEGG                   Axon guidance 0.0038996162
+## 6         GO:0030036  GO:BP actin cytoskeleton organization 0.0175325273
+## 7         GO:0007266  GO:BP Rho protein signal transduction 0.0175325273
+## 8         GO:0030029  GO:BP    actin filament-based process 0.0175926750
 ```
 
 Then, we carefully reviewed the literature:
@@ -521,8 +524,8 @@ cells. Thereby, we propose that kinase activity of LIMK1 may coordinate
 vesicular traffic of EGFR out of early endosomes (Extracted from
 Nishimura et al. 2006).
 
-*Can this raterded response explain the high activity of these kinases
-on t2 compare to t1?*
+*Can this response explain the high activity of these kinases on t1
+compare to t0?*
 
 \*\* Regarding ABL1/ABL2\*\* The Abl family kinases, Abl1 (c-Abl) and
 Abl2 (Arg), play a role in the regulation of cytoskeletal
@@ -551,37 +554,11 @@ the Cbl recruitment to the activated EGFR. *Thus, Abl and the EGFR may
 function synergistically in the pathogenesis of human tumors.*
 (Extracted from Tanos et al 2006).
 
-**Regarding MINK1**
+### MAP4K4, MAP3K5, YES1, KIT, PDGFRB (Driving the global cluster??)
 
-Daulat et al. show that the adaptor PRICKLE1 interacts with RICTOR and
-positively controls mTORC2 signaling and cancer cell migration. The
-PRICKLE1-RICTOR interaction is enhanced by MINK1, a prometastatic
-serine/threonine kinase. They also show that upregulation of PRICKLE1 is
-associated with AKT signaling and poor prognosis in basal breast cancers
-(Extracted from Daulat et al. 2016)
+### MAST1, IRAK1, CIT, TAOK3, CAMKK2
 
-**Regarding TNK2**
-
-Interestingly, TNK2 – a downstream effector of Cdc42 – can also be
-activated in response to EGF and interacts with EGFR via a previously
-characterised EGFR binding domain \[16\]. It has also been reported,
-however, that TNK2 regulates clathrin-mediated EGFR endocytosis and
-facilitates receptor degradation \[17–19\]. While Cdc42 maintains EGFR
-on the cell surface, therefore, TNK2 in contrast has paradoxically been
-reported to facilitate degradation, which is at odds with its potential
-role as an oncogene \[15, 20\]. Importantly, no functional effects of
-the TNK2/EGFR interaction have been established in a cancer context to
-date – and, more importantly, it is not known how aberrant expression of
-EGFRs often found in cancer cells affects this protein–protein
-interaction (Extracted from Howlin et al 2008)
-
-### PAK3, PAK1, PRKACA, ROCK1, ROCK2 (active in abl iMEK no ligand. t0. Unactive in LNCaP?)
-
-### MAST1, CIT, IRAK1, TAOK3, CAMKK2 (active in abl no inh t1 DHT, active in abl i3PiK t1 DHT. Not active in abl no Inh t2 DHT. Also interestingly, not active in abl IMEK t1 DHT. To explore)
-
-### CAMDK2D, SRPK3, CDK9, CDK2. (active in LNCaP IMEK t1 DHT)
-
-### MAP4K5, MAP3K1, CSNK1E, YES1 and MAP4K4 (Driving the global cluster??)
+They look clearly more active in the LNCaP cell line.
 
 ## References
 
