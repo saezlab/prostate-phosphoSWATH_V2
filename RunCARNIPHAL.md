@@ -209,7 +209,7 @@ repository:
 
 I maybe should change the results since they are a bit misleading
 compare to the Kinase activity results. For the CARNIVAL output, blue
-means active wheres it is the other way around for the Kinase activity
+means active whereas it is the other way around for the Kinase activity
 heatmaps.
 
 In the Carniphal output, it seems interesting the role played by PRKCA.

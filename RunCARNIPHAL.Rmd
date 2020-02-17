@@ -210,8 +210,8 @@ The results can be found in the following reference in our github repository:
 <https://github.com/saezlab/prostate-phosphoSWATH_V2/blob/master/Results/ActivityNetwork_model_Nr0_Uniprot.dot>
 
 I maybe should change the results since they are a bit misleading compare to the
-Kinase activity results. For the CARNIVAL output, blue means active wheres it is
-the other way around for the Kinase activity heatmaps. 
+Kinase activity results. For the CARNIVAL output, blue means active whereas it 
+is the other way around for the Kinase activity heatmaps. 
 
 In the Carniphal output, it seems interesting the role played by PRKCA. The 
 application of EGF seems to activate PRKCA which, in turn activates some 
