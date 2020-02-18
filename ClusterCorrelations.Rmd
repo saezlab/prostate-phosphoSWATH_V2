@@ -1,5 +1,25 @@
-rm(list=ls());cat('\014');if(length(dev.list()>0)){dev.off()}
+---
+title: "Prostate phosphoSWATH: Enrichment CARNIPHAL Results"
+author: "Alberto Valdeolivas: alberto.valdeolivas@bioquant.uni-heidelberg.de; Date:"
+date: "18/02/2020"
+output: github_document
+---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Abstract
+
+Study the phospho-proteome of two prostate cancer cell lines upon perturbation 
+with a combination of different ligands and inhibitors. This vignette is focused
+on generating cluster of phosphosites following a given trend in our data. 
+
+## Reading and Formatting linear model results
+
+We first loaded the required libraries for the forthcoming analysis.
+
+```{r, message=FALSE}
 library(OmnipathR)
 library(dplyr)
 library(readr)
@@ -7,8 +27,11 @@ library(igraph)
 library(bc3net)
 library(ggplot2)
 library(gridExtra)
+```
 
-setwd("/home/alvaldeolivas/Documents/GitHub/Saezlab/prostate-phosphoSWATH_V2/")
+Then, we read and format the results of our linear model. 
+
+```{r, message=FALSE}
 ResultsLinearModel <- read_tsv("Data/limma_model_results_20190301.tsv")
 
 LinearModelData_df <- ResultsLinearModel %>% 
@@ -32,8 +55,12 @@ LinearModelData_df_Clean <-
     dplyr::ungroup() %>%
     dplyr::distinct() %>% 
     dplyr::select(-p.value)  
+```
 
-## Most variable genes (Phosposites)
+We focus on the 500 most variable phosphosites to avoid finding
+cluster of sites that do not vary under these experimental conditions. 
+
+```{r, message=FALSE}
 MostVariableSites <- LinearModelData_df_Clean %>% 
     dplyr::group_by(GeneSymbol_Residue) %>%
     dplyr::mutate(variance = var(statistic))  %>%
@@ -42,7 +69,18 @@ MostVariableSites <- LinearModelData_df_Clean %>%
     dplyr::ungroup() %>%
     dplyr::top_n(500) %>%
     dplyr::select(GeneSymbol_Residue)
-    
+```
+
+## Computing correlations and Finding Communities of phosphosites
+
+We generate a matrix with all the phosphosites and the conditions and we 
+compute Pearson correlation on it. Then, we create a network of phosphosites by
+drawing an edge between a pair of phosphosites if they have a correlation larger
+than 0.7. This is an initial selection that can be improved or modified. We
+also create an anticorrelation graph, although we will now move on with the 
+positive correlation graph. 
+
+```{r, message=FALSE}
 MatrixStatistic <- 
     dplyr::semi_join(LinearModelData_df_Clean,MostVariableSites) %>%
     tidyr::pivot_wider(names_from = term, values_from = statistic)  %>%
@@ -56,26 +94,24 @@ corGraph_AdjMatrix <-
     apply(corMatrix, 2, function(x){ ifelse(x >= 0.7,1,0)})
 AnticorGraph_AdjMatrix <- 
     apply(corMatrix, 2, function(x){ ifelse(x <= -0.7,1,0)})    
+```
 
-### We transform from tha adjacency matrix to a graph and we apply clustering
-### methods:
+Then, we apply Louvain clustering on the graph. It is to note that we apply an
+iterative version of Louvain. The method is applied in a recursive way for those 
+communities larger than a given size. We chose communities containing between 5
+and 40 phosphosites. This election is arbitrary but based on the fact that a 
+cluster of this number of phosphosites is easier to interpret from a biological
+perspective (check how many phosphosites are in avergare regulated by a kinase).
+
+```{r, message=FALSE}
+## Transform to an igraph object
 corGraph_igraph <- graph_from_adjacency_matrix(corGraph_AdjMatrix, 
     mode = c("undirected"), diag = FALSE)
 
-## We can check the components of the graph:
-
-clusters(corGraph_igraph)
-
-## So, I get the largest connected component: 
-
+## I get the largest connected component of the graph: 
 corGraph_igraph <- getgcc(corGraph_igraph)
 
-
-## I can apply recursive Loavien in the clusters larger than 40
-
-## We apply clustering on the networks.
-# 2.- Perform of iterative Louvain Clustering.
-
+## Function to Perform an iterative Louvain Clustering.
 IterativeLouvain <- function(x,OriginalNetwork,minSize,maxSize) {
   a <- 0 
   n <- length(x)
@@ -102,40 +138,44 @@ IterativeLouvain <- function(x,OriginalNetwork,minSize,maxSize) {
   return(newList)
 }
 
-
-## Sizes of the modules we want to consider. 
+## We define the size of the modules and the maximun number of iterations. 
 smallest_size <- 5
 largest_size <- 40
-
-## First Louvain clustering to obtain the first modules
-
-Modules <- cluster_louvain(corGraph_igraph)
-
 iter <- 0
 
-## Iterative clusters to split the first modules into smaller clusters.
+## First Louvain clustering to obtain the first modules
+Modules <- cluster_louvain(corGraph_igraph)
 
+## Iterative clusters to split the first modules into smaller clusters.
 while (max(sapply(Modules[],length)) >= largest_size && iter <= 100) {
   iter <-iter +1 
-  print (iter)
+  # print (iter)
   NewModules <- IterativeLouvain(Modules,corGraph_igraph,smallest_size,largest_size)
   Modules <- NewModules  
 }
+```
 
+## Plotting the Results 
 
-## Now that I have the modules I can print their evolution on time for the 
-## different categories:
+In this case, we focus on analysing the trend of phospohsites in the 
+different time points between the two cell lines when no inhibition is applied
+and the EGF ligand is present. 
 
-# I am going to take as an example the first module:
+We first select the experimental conditions of interest and the phosphosites of
+a given module and extract their t-values from our linear model. 
 
+```{r, message=FALSE}
+## I select my conditions of interest
+ConditionA <- 
+    c("LNCaP_noInhib_t0_noLigand", "LNCaP_noInhib_t1_EGF","LNCaP_noInhib_t2_EGF")
+ConditionB <- 
+    c("abl_noInhib_t0_noLigand", "abl_noInhib_t1_EGF","abl_noInhib_t2_EGF")
+
+## I take as an one of our modules:
 SitesModule <- Modules[[21]]
 SitesModule
-## Conditions
 
-ConditionA <- c("LNCaP_noInhib_t0_noLigand", "LNCaP_noInhib_t1_EGF","LNCaP_noInhib_t2_EGF")
-ConditionB <- c("abl_noInhib_t0_noLigand", "abl_noInhib_t1_EGF","abl_noInhib_t2_EGF")
-
-
+## We extract the info for these conditions
 LinearModelData_df_SelectA <- LinearModelData_df_Clean %>%
     dplyr::filter(term %in% ConditionA, GeneSymbol_Residue %in% SitesModule) %>%
     dplyr::mutate(time = ifelse(grepl("_t0_", term), "t0", 
@@ -145,11 +185,15 @@ LinearModelData_df_SelectB <- LinearModelData_df_Clean %>%
     dplyr::filter(term %in% ConditionB, GeneSymbol_Residue %in% SitesModule) %>%
     dplyr::mutate(time = ifelse(grepl("_t0_", term), "t0", 
                          ifelse(grepl("_t1_", term), "t1","t2")))
+```
 
+We finally plot the results.
+
+```{r, message=FALSE}
 pA <- ggplot(data=LinearModelData_df_SelectA, aes(x=time, y=statistic, group=GeneSymbol_Residue)) +
     geom_line(alpha = 0.5, color = "blue", linetype = "dashed", size= 1.5) +
     geom_point(alpha = 0.5, size = 3,  color = "blue") +  
-    theme_minimal() + ggtitle("LNCaP") + 
+    theme_minimal() + ggtitle("LNCaP + EGF") + 
     theme(plot.title = element_text(size = 20, face = "bold", colour = "red", 
                                     hjust = 0.5))
 
@@ -157,8 +201,28 @@ pA <- ggplot(data=LinearModelData_df_SelectA, aes(x=time, y=statistic, group=Gen
 pB <- ggplot(data=LinearModelData_df_SelectB, aes(x=time, y=statistic, group=GeneSymbol_Residue)) +
     geom_line(alpha = 0.5, color = "blue", linetype = "dashed", size= 1.5) +
     geom_point(alpha = 0.5, size = 3,  color = "blue") +  
-    theme_minimal() + ggtitle("abl")   + 
+    theme_minimal() + ggtitle("abl + EGF")   + 
     theme(plot.title = element_text(size = 20, face = "bold", colour = "red",
                                     hjust = 0.5))
 
 grid.arrange(pA, pB, ncol=2)
+```
+
+## Conclusions
+
+This is just an illustration of what we aim at finding clustering the 
+phosphosites. However,it is to note that the procedure described in this 
+vignette is not the most optimal. We computed the correlations taking into
+account all the experimental conditions and later we only focused on a given
+one. Therefore, some phosphosites in the cluster of the analysed condition
+can have an unexpected behaviour. We can define a better procedure based on 
+what we want to analyse. I think that it would be very interesting to find 
+clusters of phosphosites that have a similar behaviour/trend in one condition
+and the opposite in another. 
+
+
+## R session Info
+
+```{r}
+sessionInfo()
+```
