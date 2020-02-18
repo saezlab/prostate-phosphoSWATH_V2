@@ -211,7 +211,7 @@ pB <- ggplot(data=LinearModelData_df_SelectB, aes(x=time, y=statistic, group=Gen
 grid.arrange(pA, pB, ncol=2)
 ```
 
-![](ClusterCorrelations_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+![](ClusterCorrelations_files/figure-gfm/wide-1.png)<!-- -->
 
 ## Conclusions
 
@@ -223,7 +223,8 @@ on a given one. Therefore, some phosphosites in the cluster of the
 analysed condition can have an unexpected behaviour. We can define a
 better procedure based on what we want to analyse. I think that it would
 be very interesting to find clusters of phosphosites that have a similar
-behaviour/trend in one condition and the opposite in another.
+behaviour/trend in one condition and the opposite in another. Then, we
+can check which kinases are regulating those sites.
 
 ## R session Info
 

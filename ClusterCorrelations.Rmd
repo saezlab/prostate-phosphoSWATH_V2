@@ -189,7 +189,7 @@ LinearModelData_df_SelectB <- LinearModelData_df_Clean %>%
 
 We finally plot the results.
 
-```{r, message=FALSE}
+```{r wide, message=FALSE}
 pA <- ggplot(data=LinearModelData_df_SelectA, aes(x=time, y=statistic, group=GeneSymbol_Residue)) +
     geom_line(alpha = 0.5, color = "blue", linetype = "dashed", size= 1.5) +
     geom_point(alpha = 0.5, size = 3,  color = "blue") +  
@@ -218,8 +218,8 @@ one. Therefore, some phosphosites in the cluster of the analysed condition
 can have an unexpected behaviour. We can define a better procedure based on 
 what we want to analyse. I think that it would be very interesting to find 
 clusters of phosphosites that have a similar behaviour/trend in one condition
-and the opposite in another. 
-
+and the opposite in another. Then, we can check which kinases are regulating 
+those sites.
 
 ## R session Info
 
