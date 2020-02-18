@@ -68,7 +68,7 @@ PhophositesOmnipath <- Omnipath_df %>%
     dplyr::pull(GeneResidue)  %>%
     unique()
 length(PhophositesOmnipath)
-## [1] 13535
+## [1] 13524
 ```
 
 In order to increase our coverage, we also read the curated list of
@@ -285,7 +285,7 @@ Omnipath_df_reduced <- Omnipath_df %>%
 KSN_Omnipath <- Omnipath_df_reduced %>%
   dplyr::distinct() 
 nrow(KSN_Omnipath)
-## [1] 33615
+## [1] 32594
 ```
 
 We generate the regulons and run viper to estimate kinase activity using
@@ -398,7 +398,7 @@ KSN_merged_Allsources <- dplyr::bind_rows(KSN_Omnipath, KSN_KEA2, KSN_PDTs) %>%
   dplyr::distinct() %>%
   dplyr::mutate(sign = 1)
 nrow(KSN_merged_Allsources)
-## [1] 60716
+## [1] 59711
 ```
 
 We generate the regulons and run viper to estimate kinase activity using
@@ -433,7 +433,7 @@ Looking at these heatmaps, we decided to focus on the KAE results using
 the PDTs data to build the KSN. The LNCaP cell line tries to cluster
 togheter, but the abl lines inhibited with iPI3K separate them. We focus
 here in the analysis of some cluster of kinases that are
-active/unnactuve under certain conditions:
+active/unnactive under certain conditions:
 
 ### ABL1, ABL2, LIMK1, LIMK2
 
@@ -458,14 +458,14 @@ EnrichmentResults <- gost(GeneSet, significant = TRUE, user_threshold = 0.025,
     dplyr::arrange(p_value)
 EnrichmentResults
 ##              term_id source                       term_name      p_value
-## 1  REAC:R-HSA-422475   REAC                   Axon guidance 0.0007417867
-## 2 REAC:R-HSA-1266738   REAC           Developmental Biology 0.0014336829
-## 3  REAC:R-HSA-195258   REAC            RHO GTPase Effectors 0.0028577307
-## 4  REAC:R-HSA-194315   REAC        Signaling by Rho GTPases 0.0035991352
-## 5         KEGG:04360   KEGG                   Axon guidance 0.0038996162
-## 6         GO:0030036  GO:BP actin cytoskeleton organization 0.0175325273
-## 7         GO:0007266  GO:BP Rho protein signal transduction 0.0175325273
-## 8         GO:0030029  GO:BP    actin filament-based process 0.0175926750
+## 1  REAC:R-HSA-422475   REAC                   Axon guidance 0.0007055486
+## 2 REAC:R-HSA-1266738   REAC           Developmental Biology 0.0013940856
+## 3  REAC:R-HSA-195258   REAC            RHO GTPase Effectors 0.0028825864
+## 4         KEGG:04360   KEGG                   Axon guidance 0.0035408753
+## 5  REAC:R-HSA-194315   REAC        Signaling by Rho GTPases 0.0036303839
+## 6         GO:0030036  GO:BP actin cytoskeleton organization 0.0174953608
+## 7         GO:0007266  GO:BP Rho protein signal transduction 0.0174953608
+## 8         GO:0030029  GO:BP    actin filament-based process 0.0177996455
 ```
 
 Then, we carefully reviewed the literature:
@@ -527,28 +527,29 @@ Nishimura et al. 2006).
 *Can this response explain the high activity of these kinases on t1
 compare to t0?*
 
-\*\* Regarding ABL1/ABL2\*\* The Abl family kinases, Abl1 (c-Abl) and
-Abl2 (Arg), play a role in the regulation of cytoskeletal
-reorganization, cell migration, proliferation, and survival (17). We and
-others have shown that endogenous Abl kinases are rapidly activated
-after EGFR stimulation (18-20). Abl kinases are required for
-EGF-mediated membrane ruffling and Rac activation at physiological
-concentrations of the ligand (21). Moreover, the SH2 domains of Abl1 and
-Abl2 have been shown to bind with high affinity to the EGFR and other
-ErbB family members by interacting with multiple tyrosines on the
-phosphorylated receptors (19, 22). However, little is known regarding
-the effects of Abl activation on EGFR physiological functions. Similar
-to the EGFR, Abl kinase hyperactivation has been linked to the
-pathogenesis of cancer. Chromosomal translocation events in human
-leukemias give rise to structurally altered oncogenic Abl fusion
-proteins such as Bcr-Abl, Tel-Abl, and Tel-Arg (17). Furthermore,
-enhanced expression of Abl kinases is observed in a subset of primary
-colon carcinomas and metastatic tumors (23), as well as in pancreatic
-ductal carcinomas and renal medullary carcinoma (24, 25). Also, Abl
-kinases are constitutively activated downstream of ErbB receptors and
-Src kinases in breast cancer cell lines (20). Here we show that the
-activated Abl kinase phosphorylates the EGFR at specific sites and
-uncouples the receptor from ligand-mediated
+**Regarding ABL1 & ABL2**
+
+The Abl family kinases, Abl1 (c-Abl) and Abl2 (Arg), play a role in the
+regulation of cytoskeletal reorganization, cell migration,
+proliferation, and survival (17). We and others have shown that
+endogenous Abl kinases are rapidly activated after EGFR stimulation
+(18-20). Abl kinases are required for EGF-mediated membrane ruffling and
+Rac activation at physiological concentrations of the ligand (21).
+Moreover, the SH2 domains of Abl1 and Abl2 have been shown to bind with
+high affinity to the EGFR and other ErbB family members by interacting
+with multiple tyrosines on the phosphorylated receptors (19, 22).
+However, little is known regarding the effects of Abl activation on EGFR
+physiological functions. Similar to the EGFR, Abl kinase hyperactivation
+has been linked to the pathogenesis of cancer. Chromosomal translocation
+events in human leukemias give rise to structurally altered oncogenic
+Abl fusion proteins such as Bcr-Abl, Tel-Abl, and Tel-Arg (17).
+Furthermore, enhanced expression of Abl kinases is observed in a subset
+of primary colon carcinomas and metastatic tumors (23), as well as in
+pancreatic ductal carcinomas and renal medullary carcinoma (24, 25).
+Also, Abl kinases are constitutively activated downstream of ErbB
+receptors and Src kinases in breast cancer cell lines (20). Here we show
+that the activated Abl kinase phosphorylates the EGFR at specific sites
+and uncouples the receptor from ligand-mediated
 internalization.Additionally, we show that kinase-active Abl disrupts
 the Cbl recruitment to the activated EGFR. *Thus, Abl and the EGFR may
 function synergistically in the pathogenesis of human tumors.*

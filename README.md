@@ -16,7 +16,7 @@ conditions under study using Viper and different kinase substate networks.
 
 - **CarniPHal**: we run CARNIVAL with a particular input setup that allows us
 to generate a causal network aiming at explaining the mechanism underlying 
-the phosphosite activity in a given condition. 
+the phosphosite activity in a given condition. (Aurelien's idea) 
 
 <https://github.com/saezlab/prostate-phosphoSWATH_V2/blob/master/RunCARNIPHAL.md>
 

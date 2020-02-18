@@ -16,7 +16,7 @@ Vignette:
 ## CARNIPHAL (CARNIVAL using Phosphosites and Kinases)
 
 In this vignette, we run CARNIVAL (Liu et al. 2019) but using a
-particular set of inputs:
+particular set of inputs based on an idea proposed by Aurelien:
 
   - Our *prior knowledge network* contains both: Omnipath signed
     directed interactions and a kinsae-substrate interactions describing
